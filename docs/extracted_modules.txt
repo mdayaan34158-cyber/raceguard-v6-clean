@@ -1,0 +1,5 @@
+/home/user/audit/streamlit_extracted/bearing-streamlit
+/home/user/audit/streamlit_extracted/bearing-streamlit/src/services.py
+/home/user/audit/streamlit_extracted/bearing-streamlit/src/inference.py
+Gradio installed: False
+Flask installed: False

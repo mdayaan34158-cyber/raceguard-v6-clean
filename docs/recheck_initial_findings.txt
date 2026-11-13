@@ -1,0 +1,147 @@
+HISTORICAL REPRODUCTION BEFORE FIXES — both failures corrected; see recheck_pytest_results.txt for the current passing run.
+
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+____________ test_history_current_same_result_no_duplicate_plot_ids ____________
+
+    def test_history_current_same_result_no_duplicate_plot_ids():
+     at=app();button(at,'Run vibration analysis').click().run()
+     at.checkbox[0].set_value(True).run()  # current sample's geometry checkbox; restore to false below
+     at.checkbox[0].set_value(False).run()
+     next(x for x in at.checkbox if x.label=='Show selected historical result').set_value(True).run()
+>    assert not at.exception
+E    assert not ElementList(_list=[Exception(message="This app has encountered an error. The original error message is redacted to pre...\'stretch\',config={\'displaylogo\':False})\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'])])
+E     +  where ElementList(_list=[Exception(message="This app has encountered an error. The original error message is redacted to pre...\'stretch\',config={\'displaylogo\':False})\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'])]) = AppTest(\n    _script_path='/home/user/bearing-streamlit/streamlit_app.py',\n    default_timeout=30,\n    _session_state=...              4: Caption()\n            }\n        ),\n        2: SpecialBlock(\n            type='event'\n        )\n    }\n).exception
+
+tests/test_recheck.py:16: AssertionError
+----------------------------- Captured stderr call -----------------------------
+2026-11-13 01:49:14.963 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.
+2026-11-13 01:49:16.199 Uncaught app execution
+Traceback (most recent call last):
+  File "/home/user/audit/streamlit_recheck/.venv/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/exec_code.py", line 136, in exec_func_with_error_handling
+    result = func()
+  File "/home/user/audit/streamlit_recheck/.venv/lib/python3.13/site-packages/streamlit/runtime/scriptrunner/script_runner.py", line 936, in code_to_exec
+    exec(code, module.__dict__)  # noqa: S102
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/bearing-streamlit/streamlit_app.py", line 178, in <module>
+    {'Vibration':vibration_page,'RUL':rul_page,'Sound':sound_page,'Evidence & guide':guide_page}[page]()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/user/bearing-streamlit/streamlit_app.py", line 97, in vibration_page
+    st.warning('Historical result: source/settings below belong to that saved run, not the current input controls.');vibration_view(history[selected],prefix='history')
+                                                                                                                     ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/bearing-streamlit/streamlit_app.py", line 49, in vibration_view
+    p=d['plots'];line([('Waveform',p['time'],p['signal'],False)],'Seconds',d['units']);line([('FFT amplitude',p['frequency'],p['amplitude'],False)],'Frequency Hz','Amplitude')
+                 ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/bearing-streamlit/streamlit_app.py", line 21, in line
+    st.plotly_chart(fig,width='stretch',config={'displaylogo':False})
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/audit/streamlit_recheck/.venv/lib/python3.13/site-packages/streamlit/runtime/metrics_util.py", line 732, in wrapped_func
+    result = non_optional_func(*args, **kwargs)
+  File "/home/user/audit/streamlit_recheck/.venv/lib/python3.13/site-packages/streamlit/elements/plotly_chart.py", line 913, in plotly_chart
+    plotly_chart_proto.id = compute_and_register_element_id(
+                            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        "plotly_chart",
+        ^^^^^^^^^^^^^^^
+    ...<10 lines>...
+        alt=normalized_alt,
+        ^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/user/audit/streamlit_recheck/.venv/lib/python3.13/site-packages/streamlit/elements/lib/utils.py", line 318, in compute_and_register_element_id
+    _register_element_id(ctx, element_type, element_id)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/audit/streamlit_recheck/.venv/lib/python3.13/site-packages/streamlit/elements/lib/utils.py", line 203, in _register_element_id
+    raise StreamlitDuplicateElementId(element_type)
+streamlit.errors.StreamlitDuplicateElementId: There are multiple `plotly_chart` elements with the same auto-generated ID. When this element is created, it is assigned an internal ID based on the element type and provided parameters. Multiple elements with the same type and parameters will cause this error.
+
+To fix this error, please pass a unique `key` argument to the `plotly_chart` element.
+___________ test_nonfinite_unused_metadata_still_exports_valid_json ____________
+
+    def test_nonfinite_unused_metadata_still_exports_valid_json():
+     df=pd.read_csv(ROOT/'data/sample_data/normal.csv');df['sensor_note']=[np.inf,-np.inf]+[np.nan]*(len(df)-2)
+     d=vibration({'source':'upload','fs':48000,'column':'acceleration','mode':'signal'},df.to_csv(index=False).encode())
+>    data=json.loads(downloads(d,'vibration')['vibration.json']);assert data['preview'][0]['sensor_note']=='Infinity';assert data['preview'][1]['sensor_note']=='-Infinity';assert data['preview'][2]['sensor_note'] is None
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_recheck.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/services.py:90: in downloads
+    files={kind+'.json':json.dumps(d,indent=2,allow_nan=False).encode()}
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/usr/local/lib/python3.13/json/__init__.py:242: in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+/usr/local/lib/python3.13/json/encoder.py:202: in encode
+    chunks = self.iterencode(o, _one_shot=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.encoder.JSONEncoder object at 0x7f6cd0268320>
+o = {'action': 'Waveform, FFT, statistics and per-window calculations completed successfully. Fault classification is inte...: '', 'substitution': '32768−8×4096', ...}], 'geometry': None, ...}, 'classification_status': 'not_run_by_design', ...}
+_one_shot = True
+
+    def iterencode(self, o, _one_shot=False):
+        """Encode the given object and yield each string
+        representation as available.
+    
+        For example::
+    
+            for chunk in JSONEncoder().iterencode(bigobject):
+                mysocket.write(chunk)
+    
+        """
+        if self.check_circular:
+            markers = {}
+        else:
+            markers = None
+        if self.ensure_ascii:
+            _encoder = encode_basestring_ascii
+        else:
+            _encoder = encode_basestring
+    
+        def floatstr(o, allow_nan=self.allow_nan,
+                _repr=float.__repr__, _inf=INFINITY, _neginf=-INFINITY):
+            # Check for specials.  Note that this type of test is processor
+            # and/or platform-specific, so do tests which don't depend on the
+            # internals.
+    
+            if o != o:
+                text = 'NaN'
+            elif o == _inf:
+                text = 'Infinity'
+            elif o == _neginf:
+                text = '-Infinity'
+            else:
+                return _repr(o)
+    
+            if not allow_nan:
+                raise ValueError(
+                    "Out of range float values are not JSON compliant: " +
+                    repr(o))
+    
+            return text
+    
+    
+        if self.indent is None or isinstance(self.indent, str):
+            indent = self.indent
+        else:
+            indent = ' ' * self.indent
+        if _one_shot and c_make_encoder is not None:
+            _iterencode = c_make_encoder(
+                markers, self.default, _encoder, indent,
+                self.key_separator, self.item_separator, self.sort_keys,
+                self.skipkeys, self.allow_nan)
+        else:
+            _iterencode = _make_iterencode(
+                markers, self.default, _encoder, indent, floatstr,
+                self.key_separator, self.item_separator, self.sort_keys,
+                self.skipkeys, _one_shot)
+>       return _iterencode(o, 0)
+               ^^^^^^^^^^^^^^^^^
+E       ValueError: Out of range float values are not JSON compliant: inf
+
+/usr/local/lib/python3.13/json/encoder.py:263: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_recheck.py::test_history_current_same_result_no_duplicate_plot_ids
+FAILED tests/test_recheck.py::test_nonfinite_unused_metadata_still_exports_valid_json
+2 failed in 4.04s

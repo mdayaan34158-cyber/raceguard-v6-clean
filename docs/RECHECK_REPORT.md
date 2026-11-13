@@ -1,0 +1,27 @@
+> **Current v6 interface/deployment:** full main application is app.py; streamlit_app.py is a compatibility alias. See V6_INTERFACE_REPORT.md for current69-test/20-browser-check evidence and RaceGuard styling. The report below preserves the preceding numerical/validation cross-check background.
+
+# Streamlit v5.1 — requested code and interface cross-check
+
+This is the current rebuilt release. The active framework remains native Streamlit. Numerical kernels/model weights and feature scope are preserved; no fabricated diagnosis, RUL or acoustic calibration was added.
+
+## Reproduced issues and fixes
+1. **Current result + identical historical result could crash the interface.** Both views generated identical Plotly chart IDs. A new AppTest reproduced Streamlit's duplicate-element failure before the fix. Current/historical waveform and FFT charts now have separate explicit stable keys; RUL and sound charts also have explicit keys. The simultaneous current/history view now passes both AppTest and real Chromium checks.
+2. **Unused CSV metadata containing infinity could break strict JSON export.** Valid selected signal data could be processed, but infinity in an unrelated preview column was not JSON compliant. The reproduction failed at export before the fix. Missing metadata previews are null; ±infinity metadata is explicitly represented as “Infinity”/“-Infinity” strings. Selected signal samples still strictly reject NaN/inf—no signal imputation or silent correction. Full export bundles are validated before publishing a successful current result.
+3. **Empty uploaded history/log files could silently fall back to pasted text.** Upload precedence now distinguishes no upload from an uploaded empty file. Empty uploads are rejected even if valid pasted text exists; fingerprints distinguish empty/no-upload states so stale outputs cannot be presented as current.
+4. **Error recovery feedback was inconsistent.** Outdated error notices are cleared when controls change, and RUL/sound show neutral guidance when there is no current result. Errors still remove current outputs/downloads; explicitly historical data remains separately labelled.
+5. **Additional hardening:** None is not accepted as reference-offset documentation; readiness caching includes model artifact modification time/size and checks existence; Windows launcher propagates setup/server failures instead of reporting a successful exit; release packaging excludes its own selected output path and requires a ZIP extension.
+
+The two original failure reproductions are preserved as **historical pre-fix evidence** in recheck_initial_findings.txt, clearly labelled—not reported as current failures.
+
+## Executed current results
+- **61 Python tests passed** in the fresh isolated Python3.13.16/Linux environment. This includes all46 previous Streamlit tests and15 new regression cases covering history chart coexistence, history clearing/limits/session isolation, pasted-example/custom-geometry UI, days/cycles units and download consistency, export-failure guarding, nonfinite unused metadata versus invalid selected signal, empty-upload precedence/fingerprints, reference-note validation, silence/offset export conventions and corrected-error recovery.
+- **15 native Chromium workflows passed**, including actual classifier/FFT/features/formulas/downloads, same current/history simultaneous chart view, synthetic/nonclassification and invalid-input clearing, measured upload, proportional RUL/scenario bounds/demo/history, simulation/reference WAV/log energy averaging/overrange, actual Streamlit Record→Stop→Analyse→export using a virtual microphone, evidence/user-PDF download and390px layout.
+- **Zero JavaScript page errors** and no Streamlit exception shown in the successful browser run. Tests wait for native rerun/upload completion and commit numeric changes, rather than treating partially applied controls as submitted inputs.
+- Fresh pinned dependency install and **pip check passed**. Python source compilation passed. No Gradio/Flask package is installed or loaded in the verification environment.
+- Current user PDF remains **exactly two pages**, visually checked. Model/weights and archived prior source remain unchanged. Separately extracted package verification is documented in PACKAGE_VERIFICATION.md and the recheck_extracted_* evidence files.
+
+## Evidence / commands
+Current: recheck_pytest_results.txt, recheck_browser_console.txt, browser_results.json, recheck_clean_install.log, recheck_dependency_check.txt. Existing pytest_results.txt/browser_console.txt are refreshed to current results; previous_v5_* files are historical earlier evidence. Reproduce with requirements-dev.txt, `python -m pytest -q`, the native Streamlit server, then `python tests/browser_check.py`.
+
+## Limits — not hidden as “no errors anywhere”
+These are executed software checks, not a guarantee for every host/device/OS. Actual Community Cloud publication, Docker build, Windows/macOS execution, other physical browsers/devices, real run-to-failure accuracy and calibrated acoustic accuracy are unvalidated. Microphone tests use a virtual capture device; Streamlit processes completed clips, not continuous live telemetry. Recordings go to the server. dBFS is not certified SPL/dBA; RUL scenarios/conditional fitted-crossing ranges are not safety or individual-life guarantees. All default alerts remain illustrative project rules. See README, START_HERE_DEPLOYMENT.md and METHODS.md for operating/measurement limits.

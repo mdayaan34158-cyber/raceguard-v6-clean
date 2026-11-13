@@ -1,0 +1,68 @@
+{
+  "source": "Browser microphone recording uploaded through Streamlit \u2014 not continuous live telemetry",
+  "convention": "dBFS",
+  "sample_rate": 16000.0,
+  "selected_channel": 0,
+  "duration_sec": 1.56,
+  "current_db": -23.066036103811655,
+  "minimum_db": -23.170870260574326,
+  "maximum_db": -23.065558218260552,
+  "average_db": -23.082390863851373,
+  "sample_peak_db": -20.068659309271823,
+  "clipped_samples": 0,
+  "silent_intervals": 0,
+  "history": {
+    "time_sec": [
+      0.25,
+      0.5,
+      0.75,
+      1.0,
+      1.25,
+      1.5,
+      1.56
+    ],
+    "level_db": [
+      -23.170870260574326,
+      -23.065558218260552,
+      -23.065832238453226,
+      -23.06562240537144,
+      -23.065832238453226,
+      -23.065618296753453,
+      -23.066036103811655
+    ],
+    "duration_sec": [
+      0.25,
+      0.25,
+      0.25,
+      0.25,
+      0.25,
+      0.25,
+      0.06
+    ]
+  },
+  "formulas": [
+    "RMS = sqrt(\u03a3x\u00b2/N) = 0.0701262243547; L_RMS = 20 log10(RMS / 1) = -23.082390863851373 dBFS",
+    "Sample peak = max|x| = 0.0992126464844; L_peak = 20 log10(peak / 1) = -20.068659309271823 dBFS",
+    "0 dBFS is RMS=1 under this digital convention; a peak-amplitude-1 sine has RMS level about \u22123.0103 dBFS. Silence has no finite logarithm; null means digital silence, NOT 0 dB."
+  ],
+  "reliability": "Digital amplitude measurement only. Absolute SPL, frequency response and physical accuracy are not established.",
+  "limitations": [
+    "Not dBA/dBC and not calibrated sound pressure. WAV gain, microphone processing, distance and source affect levels.",
+    "Peak is sample peak, NOT intersample true peak or certified acoustic peak.",
+    "Intervals are 0.25 seconds (last may be shorter); no IEC Fast/Slow or A/C weighting is claimed.",
+    "Near-full-scale samples flag possible clipping; actual analog clipping may occur below that point.",
+    "Streamlit analyses completed recordings, not continuously streamed microphone telemetry.",
+    "Microphone recordings are sent to the server. Browser/device processing and encoding may alter gain; physical acoustic calibration is not established."
+  ],
+  "available_channels": 1,
+  "display_settings": {
+    "low": -90.0,
+    "high": 0.0,
+    "warning": -20.0,
+    "critical": -6.0,
+    "offset": 0.0,
+    "reference_note": ""
+  },
+  "display_convention": "dBFS",
+  "alert": "Below configured thresholds"
+}

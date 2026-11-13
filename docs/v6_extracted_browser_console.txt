@@ -1,0 +1,17 @@
+[
+  "Native Streamlit classifier, waveform/FFT, features/formulas and actual JSON download",
+  "Current and identical historical results render together without duplicate chart/widget IDs",
+  "Synthetic processing succeeds with explicit nonclassification; changed inputs hide stale results",
+  "Invalid synthetic Nyquist input clears current output/exports",
+  "Real measured CSV upload, explicit signal column/domain and classifier",
+  "RUL budget/scenario bounds and proportional 20% consumed meter",
+  "Invalid RUL input removes stale forecast and download",
+  "Conditional RUL demo with observed/fit/limit chart, prefix history and honest range",
+  "Sound simulation processes real generated audio with labelled source and energy statistics",
+  "Uploaded 0.1-amplitude sine measures approximately \u221223.01 dBFS RMS",
+  "Out-of-range number preserved; meter clips position to100%, not numeric value",
+  "External unverified SPL log uses duration/energy weighting",
+  "Actual Streamlit Record\u2192Stop\u2192analyse\u2192export workflow using virtual microphone; not live telemetry",
+  "Evidence screen and user-guide download match the packaged current PDF",
+  "390px responsive sound view without horizontal document overflow"
+]

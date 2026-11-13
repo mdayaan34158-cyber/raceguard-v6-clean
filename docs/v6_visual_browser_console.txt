@@ -1,0 +1,7 @@
+[
+  "Original RaceGuard visual language: branded sidebar, dark/mint theme, page hero and four honest KPI cards",
+  "Actual bearing image loads in browser; before-run illustration is neutral and explicitly not assessed",
+  "Working model result drives KPI values, bearing-class mapping and real native charts, with localization caveat",
+  "Current and history views retain separate chart keys and isolated bearing SVG image identifiers",
+  "390px layout: responsive two-column KPI grid, readable hero and no document horizontal overflow"
+]

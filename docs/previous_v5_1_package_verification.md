@@ -1,0 +1,17 @@
+# Streamlit v5.1 — rebuilt package verification
+
+This is the new cross-checked native Streamlit release. The earlier v5 verification is retained in docs/previous_v5_package_verification.md as historical evidence.
+
+1. Reviewed active interface/service/validation/export/launcher/packaging code and reproduced two real pre-fix failures: simultaneous current/history chart IDs and JSON serialization of nonfinite unused metadata. Fixed both and added regressions; also hardened empty-upload precedence/fingerprints, reference notes, error recovery, export publication, readiness cache and launcher/packaging handling. See docs/RECHECK_REPORT.md.
+2. Created a fresh isolated Python3.13.16 environment, installed pinned requirements and test/PDF tooling, and ran pip check successfully. Gradio/Flask are not installed or imported by the active Streamlit application.
+3. Current working-copy checks: **61 Python tests passed**; **15 actual Chromium workflows passed**, with no JavaScript page errors or Streamlit exception shown. Includes the newly fixed current/history view and real virtual-microphone recording→analysis→export.
+4. Built a new ZIP and extracted it into a separate directory. ZIP CRC and every SHA256SUMS.txt per-file digest matched. Required source, runtime configuration, model/evaluation, sample data, launcher scripts, instructions and current PDF were present.
+5. From the **extracted root**, ran the full suite in the fresh environment: **61 passed** (docs/recheck_extracted_pytest.txt). Started its native Streamlit server on0.0.0.0:8502 and ran all **15 browser workflows** against it successfully (docs/recheck_extracted_browser.txt). Module paths in docs/recheck_extracted_modules.txt confirm the extracted code was imported, with no Gradio/Flask package installed.
+6. Current docs/USER_MANUAL.pdf is **exactly2 A4 pages**, page/text checked and both pages visually inspected; the UI-downloaded copy matched it byte-for-byte. Previous delivered full source remains unchanged in archive/previous_v4_source.zip. The trained model and numerical-kernel/data artifacts are unchanged by this interface/export fix.
+7. Added verification logs/documentation, rebuilt the final ZIP and checked CRC, safe/required paths, every per-file digest, unchanged model/archival bytes, matching extracted-tested runtime source and the2-page PDF again. Only verification records were added after the extracted software run; runtime code/configuration/dependencies were not changed.
+
+Current evidence: docs/recheck_pytest_results.txt, docs/recheck_browser_console.txt, docs/browser_results.json, docs/recheck_clean_install.log, docs/recheck_dependency_check.txt and the extracted evidence above. Pre-fix failure reproduction is clearly labelled historical in docs/recheck_initial_findings.txt; it is not a current failing run.
+
+Microphone testing uses virtual input and completed recordings, not calibrated hardware or continuous streaming. Actual remote account publication, Docker build, Windows/macOS execution and universal browser/device compatibility are not validated. These are executed software checks, not a promise of zero errors everywhere. RUL remains conditional planning; dBFS is not certified SPL/dBA. Full limits are in README, deployment guide and methods/test reports.
+
+After extracting, run `sha256sum -c SHA256SUMS.txt` on systems providing that command. The manifest covers every packaged regular file except itself; environments/caches/bytecode/secrets are excluded. The root entry point remains **streamlit_app.py**.
