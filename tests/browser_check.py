@@ -1,0 +1,48 @@
+"""Real Streamlit UI journeys; virtual microphone, not physical calibration."""
+import os,json
+from pathlib import Path
+from playwright.sync_api import sync_playwright,expect,TimeoutError as PlaywrightTimeout
+ROOT=Path(__file__).resolve().parents[1];URL=os.getenv('RACEGUARD_URL','http://127.0.0.1:8501');passed=[]
+with sync_playwright() as p:
+ b=p.chromium.launch(headless=True,args=['--no-sandbox','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream','--use-file-for-fake-audio-capture='+str(ROOT/'data/sample_data/digital_audio_demo.wav')]);ctx=b.new_context(viewport={'width':1440,'height':1100},permissions=['microphone']);page=ctx.new_page();page.set_default_timeout(20000);errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
+ def idle():expect(page.get_by_test_id('stApp')).to_have_attribute('data-test-script-state','notRunning')
+ def select(label,value):
+  for attempt in range(3):
+   idle();page.wait_for_timeout(200);box=page.get_by_label(label,exact=True);box.scroll_into_view_if_needed();box.press('Escape');box.press('ArrowDown')
+   try:
+    page.get_by_role('option',name=value,exact=True).click(timeout=3000);expect(box).to_have_value(value,timeout=3000);page.wait_for_timeout(400);idle();return
+   except (PlaywrightTimeout,AssertionError):
+    if attempt==2:raise
+ def fill(label,value):
+  box=page.get_by_label(label,exact=True);box.fill(value);box.press('Enter');page.wait_for_timeout(150);idle()
+ def upload(path):
+  page.locator('input[type=file]').set_input_files(str(path));page.get_by_role('button',name='Remove '+path.name,exact=True).wait_for();page.wait_for_timeout(350);idle()
+ def work(name):
+  page.get_by_test_id('stSidebar').get_by_text(name,exact=True).click();page.wait_for_timeout(400);idle()
+ def download(name):
+  idle()
+  with page.expect_download() as info:page.get_by_role('button',name='Download '+name,exact=True).click()
+  dest=ROOT/'docs'/('tested_'+name);info.value.save_as(dest);return dest
+ page.goto(URL);page.get_by_role('button',name='Run vibration analysis',exact=True).click();page.get_by_role('heading',name='Normal',exact=True).wait_for();expect(page.get_by_test_id('stPlotlyChart')).to_have_count(2)
+ d=json.loads(download('vibration.json').read_text());assert d['predicted_class']=='Normal';assert d['calculations']['windows'];passed.append('Native Streamlit classifier, waveform/FFT, features/formulas and actual JSON download')
+ page.get_by_text('Session vibration history — last 5 successful runs',exact=True).click();page.get_by_text('Show selected historical result',exact=True).click();expect(page.get_by_test_id('stPlotlyChart')).to_have_count(4);assert page.get_by_test_id('stException').count()==0;passed.append('Current and identical historical results render together without duplicate chart/widget IDs')
+ page.get_by_text('Show selected historical result',exact=True).click();expect(page.get_by_test_id('stPlotlyChart')).to_have_count(2)
+ select('Input source','Synthetic illustration');page.get_by_text('Inputs changed. Run again',exact=False).wait_for();expect(page.get_by_test_id('stPlotlyChart')).to_have_count(0);page.get_by_role('button',name='Run vibration analysis',exact=True).click();page.get_by_role('heading',name='Signal analysis complete',exact=True).wait_for();assert json.loads(download('vibration.json').read_text())['classification_status']=='not_run_by_design';passed.append('Synthetic processing succeeds with explicit nonclassification; changed inputs hide stale results')
+ select('Input source','Numeric synthetic builder');fill('Carrier Hz','9000');page.get_by_role('button',name='Run vibration analysis',exact=True).click();page.get_by_text('Input/computation error:',exact=False).wait_for();expect(page.get_by_test_id('stPlotlyChart')).to_have_count(0);passed.append('Invalid synthetic Nyquist input clears current output/exports')
+ select('Input source','Measured CSV upload');upload(ROOT/'data/sample_data/normal.csv');page.get_by_label('Signal column',exact=True).wait_for();select('Signal column','acceleration');select('Analysis mode','classification');page.get_by_text('I declare compatible drive-end acceleration in g',exact=True).click();page.get_by_role('button',name='Run vibration analysis',exact=True).click();page.get_by_role('heading',name='Normal',exact=True).wait_for();passed.append('Real measured CSV upload, explicit signal column/domain and classifier')
+ page.screenshot(path=str(ROOT/'docs/streamlit_vibration_desktop.png'),full_page=True)
+ work('RUL');fill('Optional minimum total life','900');fill('Optional maximum total life (paired)','1200');page.get_by_role('button',name='Calculate RUL / allowance',exact=True).click();page.get_by_role('heading',name='Remaining: 800.0000 hours',exact=True).wait_for();d=json.loads(download('rul.json').read_text());assert d['remaining_min']==700 and d['remaining_max']==1000;expect(page.get_by_role('progressbar')).to_have_attribute('aria-valuenow','20');passed.append('RUL budget/scenario bounds and proportional 20% consumed meter')
+ fill('Nominal total service life','0');page.get_by_role('button',name='Calculate RUL / allowance',exact=True).click();page.get_by_text('Input/computation error:',exact=False).wait_for();expect(page.get_by_role('progressbar')).to_have_count(0);passed.append('Invalid RUL input removes stale forecast and download')
+ select('Life-planning method','demo');page.get_by_role('button',name='Calculate RUL / allowance',exact=True).click();page.get_by_text('SYNTHETIC degradation demo',exact=False).first.wait_for();d=json.loads(download('rul.json').read_text());assert d['remaining_min']<=d['remaining']<=d['remaining_max'];expect(page.get_by_test_id('stPlotlyChart')).to_have_count(2);passed.append('Conditional RUL demo with observed/fit/limit chart, prefix history and honest range')
+ work('Sound');page.get_by_role('button',name='Analyse sound',exact=True).click();page.get_by_text('SIMULATED digital sine',exact=False).first.wait_for();d=json.loads(download('sound.json').read_text());assert d['average_db']< -24 and d['source'].startswith('SIMULATED');passed.append('Sound simulation processes real generated audio with labelled source and energy statistics')
+ select('Sound source','WAV upload');upload(ROOT/'data/sample_data/digital_audio_demo.wav');page.get_by_role('button',name='Analyse sound',exact=True).click();page.get_by_text('Uploaded WAV',exact=False).first.wait_for();d=json.loads(download('sound.json').read_text());assert abs(d['average_db']+23.01)<.01;passed.append('Uploaded 0.1-amplitude sine measures approximately −23.01 dBFS RMS')
+ fill('Display maximum dB','-30');fill('Project high-alert dB','-31');fill('Project warning dB','-40');page.get_by_role('button',name='Analyse sound',exact=True).click();page.get_by_text('outside display range (number preserved)',exact=False).first.wait_for();expect(page.get_by_role('progressbar')).to_have_attribute('aria-valuenow','100');d=json.loads(download('sound.json').read_text());assert abs(d['current_db']+23.01)<.01;passed.append('Out-of-range number preserved; meter clips position to100%, not numeric value')
+ select('Sound source','External level log');select('External level convention','User-declared dB SPL (unverified)');fill('Or paste level_db,duration_sec CSV','level_db,duration_sec\n60,1\n70,3');page.get_by_role('button',name='Analyse sound',exact=True).click();page.get_by_text('User-supplied sound level log',exact=False).first.wait_for();d=json.loads(download('sound.json').read_text());assert 68.89<d['average_db']<68.90;passed.append('External unverified SPL log uses duration/energy weighting')
+ select('Sound source','Microphone recording');page.get_by_test_id('stAudioInput').wait_for();page.get_by_role('button',name='Record',exact=True).click();page.get_by_role('button',name='Stop recording',exact=True).wait_for();page.wait_for_timeout(1500);page.get_by_role('button',name='Stop recording',exact=True).click();page.get_by_test_id('stAudioInput').locator('audio').wait_for(state='attached');page.wait_for_timeout(350);idle();fill('Display maximum dB','0');fill('Project warning dB','-20');fill('Project high-alert dB','-6');page.get_by_role('button',name='Analyse sound',exact=True).click();page.get_by_text('Browser microphone recording uploaded',exact=False).first.wait_for();d=json.loads(download('sound.json').read_text());assert d['duration_sec']>0 and d['average_db'] is not None;assert 'not continuous' in d['source'];passed.append('Actual Streamlit Record→Stop→analyse→export workflow using virtual microphone; not live telemetry')
+ work('Evidence & guide')
+ with page.expect_download() as info:page.get_by_role('button',name='Download current two-page user guide',exact=True).click()
+ pdf=ROOT/'docs/tested_user_guide.pdf';info.value.save_as(pdf);assert pdf.read_bytes()==(ROOT/'docs/USER_MANUAL.pdf').read_bytes();passed.append('Evidence screen and user-guide download match the packaged current PDF')
+ work('Sound')
+ page.set_viewport_size({'width':390,'height':844});page.wait_for_timeout(600);assert page.evaluate('document.documentElement.scrollWidth <= innerWidth+1');page.screenshot(path=str(ROOT/'docs/streamlit_sound_mobile.png'),full_page=True);passed.append('390px responsive sound view without horizontal document overflow')
+ assert page.get_by_test_id('stException').count()==0;assert not errors,errors;b.close()
+(ROOT/'docs/browser_results.json').write_text(json.dumps({'passed':passed,'javascript_errors':errors,'microphone':'Virtual Chromium input only; completed recordings, not a calibrated device or continuous streaming'},indent=2));print(json.dumps(passed,indent=2))
